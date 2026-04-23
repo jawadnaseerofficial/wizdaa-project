@@ -21,6 +21,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
 app.use(generalRateLimiter);
 
+app.get('/', (_req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Time-Off Microservice is running',
+    api: `http://localhost:${PORT}${API_PREFIX}`,
+  });
+});
+
 app.use(API_PREFIX, routes);
 
 app.use(notFoundHandler);
