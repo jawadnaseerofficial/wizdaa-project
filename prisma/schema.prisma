@@ -3,79 +3,87 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  EMPLOYEE
-  MANAGER
-  ADMIN
-}
-
-enum RequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  CANCELLED
+model Location {
+  id         String           @id @default(cuid())
+  name       String
+  externalId String           @unique
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  users      User[]
+  balances   TimeOffBalance[]
+  requests   TimeOffRequest[]
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String           @id @default(cuid())
+  email     String           @unique
   password  String
   firstName String
   lastName  String
-  role      UserRole @default(EMPLOYEE)
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  timeOffRequests TimeOffRequest[]
-  timeOffBalance  TimeOffBalance?
+  role      String           @default("EMPLOYEE")
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  locationId String?
+  location  Location?        @relation(fields: [locationId], references: [id])
+  requests  TimeOffRequest[]
+  balances  TimeOffBalance[]
 
   @@index([email])
   @@index([role])
-  @@map("users")
+}
+
+model TimeOffBalance {
+  id            String           @id @default(cuid())
+  userId        String
+  locationId    String
+  year          Int
+  totalDays     Int              @default(20)
+  availableDays Int              @default(20)
+  usedDays      Int              @default(0)
+  pendingDays   Int              @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location      Location         @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  requests      TimeOffRequest[] @relation("BalanceRequests")
+
+  @@unique([userId, locationId, year])
 }
 
 model TimeOffRequest {
   id          String        @id @default(cuid())
   userId      String
-  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  locationId  String
+  balanceId   String
   startDate   DateTime
   endDate     DateTime
   days        Int
   reason      String?
-  status      RequestStatus @default(PENDING)
-  approvedBy  String?
+  status      String        @default("PENDING")
+  approverId  String?
   approvedAt  DateTime?
-  rejectedBy  String?
   rejectedAt  DateTime?
   cancelledAt DateTime?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
-
-  @@index([userId])
-  @@index([status])
-  @@index([startDate])
-  @@index([endDate])
-  @@map("time_off_requests")
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location    Location      @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  balance     TimeOffBalance @relation("BalanceRequests", fields: [balanceId], references: [id], onDelete: Cascade)
 }
 
-model TimeOffBalance {
+model HcmSyncEvent {
   id              String   @id @default(cuid())
-  userId          String   @unique
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  totalDays       Int      @default(20)
-  usedDays       Int      @default(0)
-  pendingDays     Int      @default(0)
-  remainingDays   Int      @default(20)
-  year            Int      @default(2024)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([userId])
-  @@index([year])
-  @@map("time_off_balances")
+  userId          String
+  locationId      String
+  year            Int
+  externalBalance Int
+  requestedAt     DateTime @default(now())
+  processedAt     DateTime?
+  status          String
+  details         String?
 }

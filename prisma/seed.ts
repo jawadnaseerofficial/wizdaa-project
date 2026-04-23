@@ -1,12 +1,20 @@
-import { PrismaClient, UserRole, RequestStatus } from '@prisma/client';
+﻿import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Starting seed...');
+  const hashedPassword = await bcrypt.hash('Password123!', 10);
+  const currentYear = new Date().getFullYear();
 
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const location = await prisma.location.upsert({
+    where: { externalId: 'hq' },
+    update: { name: 'Headquarters' },
+    create: {
+      name: 'Headquarters',
+      externalId: 'hq',
+    },
+  });
 
   await prisma.user.upsert({
     where: { email: 'admin@wizdaa.com' },
@@ -16,7 +24,34 @@ async function main() {
       password: hashedPassword,
       firstName: 'Admin',
       lastName: 'User',
-      role: UserRole.ADMIN,
+      role: 'ADMIN',
+      locationId: location.id,
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'manager@wizdaa.com' },
+    update: {},
+    create: {
+      email: 'manager@wizdaa.com',
+      password: hashedPassword,
+      firstName: 'Manager',
+      lastName: 'User',
+      role: 'MANAGER',
+      locationId: location.id,
+    },
+  });
+
+  const employee = await prisma.user.upsert({
+    where: { email: 'employee@wizdaa.com' },
+    update: {},
+    create: {
+      email: 'employee@wizdaa.com',
+      password: hashedPassword,
+      firstName: 'John',
+      lastName: 'Doe',
+      role: 'EMPLOYEE',
+      locationId: location.id,
     },
   });
 
@@ -28,99 +63,59 @@ async function main() {
       password: hashedPassword,
       firstName: 'Manager',
       lastName: 'User',
-      role: UserRole.MANAGER,
+      role: 'MANAGER',
+      locationId: location.id,
     },
   });
 
-  const employee1 = await prisma.user.upsert({
-    where: { email: 'employee1@wizdaa.com' },
-    update: {},
-    create: {
-      email: 'employee1@wizdaa.com',
-      password: hashedPassword,
-      firstName: 'John',
-      lastName: 'Doe',
-      role: UserRole.EMPLOYEE,
+  const balance = await prisma.timeOffBalance.upsert({
+    where: {
+      userId_locationId_year: {
+        userId: employee.id,
+        locationId: location.id,
+        year: currentYear,
+      },
     },
-  });
-
-  const employee2 = await prisma.user.upsert({
-    where: { email: 'employee2@wizdaa.com' },
     update: {},
     create: {
-      email: 'employee2@wizdaa.com',
-      password: hashedPassword,
-      firstName: 'Jane',
-      lastName: 'Smith',
-      role: UserRole.EMPLOYEE,
-    },
-  });
-
-  await prisma.timeOffBalance.upsert({
-    where: { userId: employee1.id },
-    update: {},
-    create: {
-      userId: employee1.id,
+      userId: employee.id,
+      locationId: location.id,
+      year: currentYear,
       totalDays: 20,
-      usedDays: 5,
-      pendingDays: 2,
-      remainingDays: 13,
-      year: new Date().getFullYear(),
-    },
-  });
-
-  await prisma.timeOffBalance.upsert({
-    where: { userId: employee2.id },
-    update: {},
-    create: {
-      userId: employee2.id,
-      totalDays: 20,
-      usedDays: 0,
+      availableDays: 18,
+      usedDays: 2,
       pendingDays: 0,
-      remainingDays: 20,
-      year: new Date().getFullYear(),
     },
   });
 
-  const today = new Date();
-  const nextWeek = new Date(today);
-  nextWeek.setDate(today.getDate() + 7);
-
-  await prisma.timeOffRequest.create({
-    data: {
-      userId: employee1.id,
-      startDate: today,
-      endDate: nextWeek,
+  await prisma.timeOffRequest.upsert({
+    where: { id: 'sample-request-1' },
+    update: {},
+    create: {
+      id: 'sample-request-1',
+      userId: employee.id,
+      locationId: location.id,
+      balanceId: balance.id,
+      startDate: new Date(currentYear, 6, 10),
+      endDate: new Date(currentYear, 6, 14),
       days: 5,
       reason: 'Family vacation',
-      status: RequestStatus.APPROVED,
-      approvedBy: manager.id,
+      status: 'APPROVED',
+      approverId: manager.id,
       approvedAt: new Date(),
     },
   });
 
-  await prisma.timeOffRequest.create({
-    data: {
-      userId: employee1.id,
-      startDate: new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000),
-      endDate: new Date(today.getTime() + 16 * 24 * 60 * 60 * 1000),
-      days: 2,
-      reason: 'Personal matters',
-      status: RequestStatus.PENDING,
-    },
-  });
-
-  console.log('Seed completed successfully!');
-  console.log('Test users created:');
-  console.log('  Admin: admin@wizdaa.com / password123');
-  console.log('  Manager: manager@wizdaa.com / password123');
-  console.log('  Employee 1: employee1@wizdaa.com / password123');
-  console.log('  Employee 2: employee2@wizdaa.com / password123');
+  console.log('Seed completed successfully');
+  console.log('Credentials:');
+  console.log('  Admin: admin@wizdaa.com / Password123!');
+  console.log('  Manager: manager@wizdaa.com / Password123!');
+  console.log('  Employee: employee@wizdaa.com / Password123!');
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
+  .catch((error) => {
+    console.error(error);
     process.exit(1);
   })
   .finally(async () => {
