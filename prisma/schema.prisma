@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  EMPLOYEE
+  MANAGER
+  ADMIN
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String
+  lastName  String
+  role      UserRole @default(EMPLOYEE)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  timeOffRequests TimeOffRequest[]
+  timeOffBalance  TimeOffBalance?
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model TimeOffRequest {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startDate   DateTime
+  endDate     DateTime
+  days        Int
+  reason      String?
+  status      RequestStatus @default(PENDING)
+  approvedBy  String?
+  approvedAt  DateTime?
+  rejectedBy  String?
+  rejectedAt  DateTime?
+  cancelledAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
+  @@index([endDate])
+  @@map("time_off_requests")
+}
+
+model TimeOffBalance {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalDays       Int      @default(20)
+  usedDays       Int      @default(0)
+  pendingDays     Int      @default(0)
+  remainingDays   Int      @default(20)
+  year            Int      @default(2024)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([year])
+  @@map("time_off_balances")
+}
