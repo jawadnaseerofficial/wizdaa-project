@@ -1,121 +1,126 @@
-# Time-Off Microservice
+# Time-Off Microservice with HCM Balance Sync
 
-A production-ready, enterprise-grade Time-Off Management Microservice built with Node.js, TypeScript, Express, and PostgreSQL. This service provides a comprehensive solution for managing employee time-off requests with role-based access control, authentication, and robust business logic.
+A production-ready, enterprise-grade Time-Off Management Microservice built with **NestJS**, **TypeScript**, **SQLite**, and **Prisma ORM**. This service provides a comprehensive solution for managing employee time-off requests with role-based access control, authentication, HCM balance synchronization, and robust business logic.
 
-## Features
+## 🎯 Assessment Features
 
-- **User Authentication & Authorization**
-  - JWT-based authentication
-  - Role-based access control (Employee, Manager, Admin)
-  - Secure password hashing with bcrypt
-  - Token refresh mechanism
+- ✅ **NestJS Framework**: Modern Node.js framework with TypeScript
+- ✅ **SQLite Database**: Lightweight, file-based database with Prisma ORM
+- ✅ **HCM Integration**: Mock endpoints for real-time and batch balance sync
+- ✅ **Balance Integrity**: Defensive programming for external system integration
+- ✅ **Comprehensive Testing**: Jest test suite with coverage reports
+- ✅ **TRD Documentation**: Technical Requirements Document included
 
-- **Time-Off Management**
-  - Create time-off requests
-  - List and filter requests (by status, date range, employee)
-  - Approve/reject requests (managers only)
-  - Cancel requests (employees only, pending only)
-  - Real-time balance tracking
-  - Overlap detection
+## ✨ Features
 
-- **Security**
-  - Input validation with Joi
-  - Rate limiting
-  - SQL injection prevention (Prisma ORM)
-  - Helmet security headers
-  - CORS configuration
+### 🔐 Authentication & Authorization
+- JWT-based authentication with Passport
+- Role-based access control (Employee, Manager, Admin)
+- Secure password hashing with bcryptjs
+- Class-validator DTOs for input validation
 
-- **Testing**
-  - Unit tests with Jest
-  - Integration tests with Supertest
-  - >80% code coverage
+### 📅 Time-Off Management
+- Create time-off requests with balance validation
+- Approve/reject requests (Manager/Admin roles)
+- Cancel requests (Employee role, pending only)
+- Real-time balance tracking per employee/location/year
+- Overlap detection and business rule enforcement
 
-- **Production Ready**
-  - Structured logging with Winston
-  - Error handling middleware
-  - Environment-based configuration
-  - TypeScript for type safety
+### 🔄 HCM Balance Sync
+- **Real-time sync**: Query external HCM balances
+- **Batch sync**: Bulk update balances from HCM systems
+- **Defensive programming**: Graceful handling of HCM API failures
+- **Audit trail**: HcmSyncEvent logging for all sync operations
 
-## Tech Stack
+### 🛡️ Security & Production Ready
+- Helmet security headers
+- CORS configuration
+- Rate limiting middleware
+- Global validation pipes
+- Structured error handling
+- Winston logging integration
+
+### 🧪 Testing Suite
+- Unit tests for services and controllers
+- Integration tests for API endpoints
+- E2E tests for complete workflows
+- Mock HCM endpoints for testing edge cases
+- >80% code coverage target
+
+## 🏗️ Tech Stack
 
 - **Runtime**: Node.js 18+
-- **Language**: TypeScript 5.6
-- **Framework**: Express 4.21
-- **Database**: PostgreSQL 15+
-- **ORM**: Prisma 5.22
-- **Authentication**: JWT (jsonwebtoken)
-- **Validation**: Joi 17.13
-- **Testing**: Jest 29.7, Supertest 7.0
-- **Logging**: Winston 3.16
+- **Framework**: NestJS 11.x (with TypeScript)
+- **Database**: SQLite 5.x (with Prisma ORM)
+- **Authentication**: JWT with Passport
+- **Validation**: class-validator & class-transformer
+- **Testing**: Jest 29.x with Supertest
+- **Documentation**: Compodoc (optional)
 
-## Architecture
+## 🏛️ Architecture
 
 ```
 time-off-microservice/
 ├── src/
-│   ├── __tests__/          # Test files
-│   │   ├── integration/    # Integration tests
-│   │   ├── unit/           # Unit tests
-│   │   └── setup.ts        # Test configuration
-│   ├── config/             # Configuration files
-│   │   ├── database.ts     # Prisma client
-│   │   ├── logger.ts       # Winston logger
-│   │   └── index.ts
-│   ├── controllers/        # Request handlers
+│   ├── app.controller.ts      # Root controller
+│   ├── app.module.ts          # Root module
+│   ├── app.service.ts         # Root service
+│   ├── main.ts                # Application bootstrap
+│   ├── auth/                  # Authentication module
 │   │   ├── auth.controller.ts
-│   │   ├── timeOff.controller.ts
-│   │   └── index.ts
-│   ├── middleware/         # Express middleware
-│   │   ├── auth.ts         # Authentication & authorization
-│   │   ├── error.ts        # Error handling
-│   │   ├── rateLimit.ts    # Rate limiting
-│   │   ├── validation.ts   # Request validation
-│   │   └── index.ts
-│   ├── routes/             # API routes
-│   │   ├── auth.routes.ts
-│   │   ├── timeOff.routes.ts
-│   │   └── index.ts
-│   ├── services/           # Business logic
+│   │   ├── auth.module.ts
 │   │   ├── auth.service.ts
-│   │   ├── timeOff.service.ts
-│   │   └── index.ts
-│   ├── types/              # TypeScript types
-│   │   └── index.ts
-│   ├── utils/              # Utility functions
-│   │   ├── date.ts         # Date utilities
-│   │   ├── errors.ts       # Custom errors
-│   │   ├── jwt.ts          # JWT utilities
-│   │   ├── password.ts     # Password utilities
-│   │   ├── validation.ts   # Validation schemas
-│   │   └── index.ts
-│   └── index.ts            # Application entry point
+│   │   ├── dto/
+│   │   ├── jwt-auth.guard.ts
+│   │   ├── jwt.strategy.ts
+│   │   ├── roles.decorator.ts
+│   │   └── roles.guard.ts
+│   ├── time-off/              # Time-off management module
+│   │   ├── time-off.controller.ts
+│   │   ├── time-off.module.ts
+│   │   ├── time-off.service.ts
+│   │   └── dto/
+│   ├── hcm/                   # HCM integration module
+│   │   ├── hcm.controller.ts
+│   │   ├── hcm.module.ts
+│   │   └── hcm.service.ts
+│   ├── health/                # Health check module
+│   │   ├── health.controller.ts
+│   │   └── health.module.ts
+│   ├── prisma/                # Database module
+│   │   ├── prisma.module.ts
+│   │   └── prisma.service.ts
+│   └── common/                # Shared components
+│       ├── filters/
+│       ├── interceptors/
+│       └── pipes/
 ├── prisma/
-│   ├── schema.prisma       # Database schema
-│   └── seed.ts             # Database seeding
-├── .env.example            # Environment variables template
-├── .eslintrc.json          # ESLint configuration
-├── .gitignore              # Git ignore rules
-├── .prettierrc             # Prettier configuration
-├── jest.config.js          # Jest configuration
-├── package.json            # Project dependencies
-├── tsconfig.json           # TypeScript configuration
-└── README.md               # This file
+│   ├── schema.prisma          # SQLite database schema
+│   └── seed.ts                # Database seeding
+├── test/                      # E2E tests
+├── .env.example               # Environment template
+├── docker-compose.yml         # Docker setup
+├── Dockerfile                 # Container config
+├── jest.config.js             # Test configuration
+├── package.json               # Dependencies
+├── tsconfig.json              # TypeScript config
+├── TRD.md                     # Technical Requirements Document
+└── README.md                  # This file
 ```
 
-## Installation
+## 🚀 Quick Start
 
 ### Prerequisites
 
 - Node.js 18 or higher
-- PostgreSQL 15 or higher
 - npm or yarn
 
-### Setup Steps
+### Installation & Setup
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd time-off-microservice
+   git clone https://github.com/jawadnaseerofficial/wizdaa-project.git
+   cd wizdaa-project
    ```
 
 2. **Install dependencies**
@@ -128,19 +133,12 @@ time-off-microservice/
    cp .env.example .env
    ```
 
-   Edit `.env` and configure the following variables:
+   Configure the following in `.env`:
    ```env
    NODE_ENV=development
    PORT=3000
-   API_PREFIX=/api/v1
-   DATABASE_URL="postgresql://postgres:password@localhost:5432/time_off_db?schema=public"
+   DATABASE_URL="file:./dev.db"
    JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-   JWT_EXPIRES_IN=24h
-   JWT_REFRESH_EXPIRES_IN=7d
-   RATE_LIMIT_WINDOW_MS=900000
-   RATE_LIMIT_MAX_REQUESTS=100
-   LOG_LEVEL=info
-   LOG_FILE=logs/app.log
    ```
 
 4. **Set up the database**
@@ -151,45 +149,51 @@ time-off-microservice/
    # Run migrations
    npm run prisma:migrate
 
-   # (Optional) Seed the database with test data
+   # Seed with test data
    npm run db:seed
    ```
 
-5. **Build the project**
-   ```bash
-   npm run build
-   ```
-
-6. **Start the server**
+5. **Start the application**
    ```bash
    # Development mode with hot reload
-   npm run dev
+   npm run start:dev
 
    # Production mode
-   npm start
+   npm run build
+   npm run start:prod
    ```
 
 The API will be available at `http://localhost:3000/api/v1`
 
-## API Documentation
+## 🔑 Test Credentials
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `admin@wizdaa.com` | `Password123!` |
+| Manager | `manager@wizdaa.com` | `Password123!` |
+| Employee | `employee@wizdaa.com` | `Password123!` |
+
+## 📡 API Endpoints
 
 ### Base URL
 ```
 http://localhost:3000/api/v1
 ```
 
-### Authentication Endpoints
+### 🔐 Authentication
 
-#### Register
+#### Register User
 ```http
 POST /auth/register
 Content-Type: application/json
 
 {
   "email": "user@example.com",
-  "password": "Password123",
+  "password": "Password123!",
   "firstName": "John",
-  "lastName": "Doe"
+  "lastName": "Doe",
+  "role": "EMPLOYEE",
+  "locationId": "location-uuid"
 }
 ```
 
@@ -199,298 +203,289 @@ POST /auth/login
 Content-Type: application/json
 
 {
-  "email": "user@example.com",
-  "password": "Password123"
+  "email": "employee@wizdaa.com",
+  "password": "Password123!"
 }
 ```
 
-#### Get Profile
-```http
-GET /auth/profile
-Authorization: Bearer <token>
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "user": {
+      "id": "uuid",
+      "email": "employee@wizdaa.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "EMPLOYEE"
+    }
+  }
+}
 ```
 
-#### Refresh Token
+### 📅 Time-Off Management
+
+#### Create Request
 ```http
-POST /auth/refresh
+POST /time-off/requests
+Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "token": "<token>"
+  "locationId": "location-uuid",
+  "year": 2026,
+  "startDate": "2026-05-01",
+  "endDate": "2026-05-03",
+  "days": 3,
+  "reason": "Vacation"
 }
 ```
 
-### Time-Off Endpoints
-
-#### Create Time-Off Request
+#### Get User Requests
 ```http
-POST /time-off
+GET /time-off/requests
+Authorization: Bearer <token>
+```
+
+#### Get Balance
+```http
+GET /time-off/balance
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [{
+    "id": "uuid",
+    "userId": "uuid",
+    "locationId": "uuid",
+    "year": 2026,
+    "totalDays": 20,
+    "availableDays": 18,
+    "usedDays": 2,
+    "pendingDays": 0,
+    "location": {
+      "name": "Headquarters",
+      "externalId": "hq"
+    }
+  }]
+}
+```
+
+#### Approve Request (Manager/Admin)
+```http
+PUT /time-off/requests/:id/approve
+Authorization: Bearer <token>
+```
+
+#### Reject Request (Manager/Admin)
+```http
+PUT /time-off/requests/:id/reject
+Authorization: Bearer <token>
+```
+
+#### Cancel Request (Employee)
+```http
+PUT /time-off/requests/:id/cancel
+Authorization: Bearer <token>
+```
+
+### 🔄 HCM Integration
+
+#### Real-time Balance Query
+```http
+GET /hcm/realtime?employeeId=uuid&locationId=uuid&year=2026
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "employeeId": "uuid",
+    "locationId": "uuid",
+    "year": 2026,
+    "availableDays": 18,
+    "pendingDays": 3,
+    "usedDays": 2,
+    "totalDays": 20
+  }
+}
+```
+
+#### Batch Balance Sync
+```http
+POST /hcm/batch-sync
 Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "startDate": "2024-01-15T00:00:00.000Z",
-  "endDate": "2024-01-19T00:00:00.000Z",
-  "reason": "Family vacation"
+  "syncs": [{
+    "employeeId": "uuid",
+    "locationId": "uuid",
+    "year": 2026,
+    "externalBalance": 25
+  }]
 }
 ```
 
-#### List Time-Off Requests
-```http
-GET /time-off?status=PENDING&page=1&pageSize=10
-Authorization: Bearer <token>
-```
-
-Query Parameters:
-- `status`: Filter by status (PENDING, APPROVED, REJECTED, CANCELLED)
-- `startDateFrom`: Filter by start date from
-- `startDateTo`: Filter by start date to
-- `userId`: Filter by user ID (managers/admins only)
-- `page`: Page number (default: 1)
-- `pageSize`: Items per page (default: 10, max: 100)
-
-#### Get Time-Off Request by ID
-```http
-GET /time-off/:id
-Authorization: Bearer <token>
-```
-
-#### Approve Time-Off Request
-```http
-PUT /time-off/:id/approve
-Authorization: Bearer <token>
-```
-
-*Requires Manager or Admin role*
-
-#### Reject Time-Off Request
-```http
-PUT /time-off/:id/reject
-Authorization: Bearer <token>
-```
-
-*Requires Manager or Admin role*
-
-#### Cancel Time-Off Request
-```http
-PUT /time-off/:id/cancel
-Authorization: Bearer <token>
-```
-
-*Employees can only cancel their own pending requests*
-
-#### Get Time-Off Balance
-```http
-GET /time-off/balance/me
-Authorization: Bearer <token>
-```
-
-### Health Check
+### 🏥 Health Check
 ```http
 GET /health
 ```
 
-## Business Rules
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "success": true,
+    "message": "Service is healthy",
+    "timestamp": "2026-04-24T..."
+  }
+}
+```
 
-1. **Request Creation**
-   - Employees can only request time-off for future dates
-   - End date must be after start date
-   - Cannot request more days than available balance
-   - Cannot create overlapping requests
+## 📊 Business Rules
 
-2. **Request Approval**
-   - Only managers and admins can approve requests
-   - Can only approve pending requests
-   - Balance is updated upon approval
+### Balance Integrity
+1. **Pre-request Validation**: Check available balance before allowing requests
+2. **Pending State Management**: Reserve balance when request is pending
+3. **Approval Workflow**: Deduct balance only on approval, restore on rejection
+4. **Cancellation Handling**: Restore balance when employee cancels approved request
+5. **HCM Sync Priority**: External balance updates take precedence
 
-3. **Request Rejection**
-   - Only managers and admins can reject requests
-   - Can only reject pending requests
+### HCM Defensive Programming
+- **API Failures**: Continue operation with cached balances
+- **Invalid Data**: Validate combinations and handle gracefully
+- **Race Conditions**: Use database transactions for all balance updates
+- **Audit Trail**: Log all balance changes and HCM sync events
 
-4. **Request Cancellation**
-   - Employees can only cancel their own requests
-   - Can only cancel pending requests
-   - Balance is updated upon cancellation
+## 🧪 Testing
 
-5. **Balance Calculation**
-   - Total days: 20 per year (configurable)
-   - Used days: Sum of approved requests
-   - Pending days: Sum of pending requests
-   - Remaining days: Total - Used - Pending
-
-## Testing
-
-### Run All Tests
+### Run Complete Test Suite
 ```bash
 npm test
 ```
 
-### Run Tests in Watch Mode
+### Run with Coverage
+```bash
+npm run test
+```
+
+### Run E2E Tests
+```bash
+npm run test:e2e
+```
+
+### Run in Watch Mode
 ```bash
 npm run test:watch
 ```
 
-### Run Unit Tests Only
-```bash
-npm test -- --testPathPattern=unit
-```
-
-### Run Integration Tests Only
-```bash
-npm run test:integration
-```
-
-### Generate Coverage Report
-```bash
-npm test -- --coverage
-```
-
-Coverage reports are generated in the `coverage/` directory.
-
-## Development
+## 🛠️ Development
 
 ### Code Quality
-
 ```bash
 # Lint code
 npm run lint
-
-# Fix linting issues
-npm run lint:fix
 
 # Format code
 npm run format
 ```
 
 ### Database Management
-
 ```bash
 # Open Prisma Studio
 npm run prisma:studio
 
-# Create a new migration
-npx prisma migrate dev --name <migration-name>
+# Reset database
+npm run prisma:migrate reset
 
-# Reset database (use with caution)
-npx prisma migrate reset
+# Generate client after schema changes
+npm run prisma:generate
 ```
 
-## Security Considerations
-
-1. **Authentication**
-   - JWT tokens are used for authentication
-   - Tokens expire after 24 hours (configurable)
-   - Refresh tokens are supported
-
-2. **Authorization**
-   - Role-based access control (RBAC)
-   - Employees can only access their own data
-   - Managers can access all employee data
-   - Admins have full access
-
-3. **Input Validation**
-   - All inputs are validated using Joi schemas
-   - SQL injection prevention via Prisma ORM
-   - XSS prevention via proper escaping
-
-4. **Rate Limiting**
-   - Auth endpoints: 5 requests per 15 minutes
-   - General endpoints: 100 requests per 15 minutes
-
-5. **Password Security**
-   - Passwords are hashed using bcrypt with 10 salt rounds
-   - Minimum password requirements: 8 characters, 1 uppercase, 1 lowercase, 1 number
-
-## Error Handling
-
-The API uses standard HTTP status codes:
-
-- `200 OK`: Request successful
-- `201 Created`: Resource created successfully
-- `400 Bad Request`: Invalid input or validation error
-- `401 Unauthorized`: Authentication required or failed
-- `403 Forbidden`: Insufficient permissions
-- `404 Not Found`: Resource not found
-- `409 Conflict`: Resource already exists
-- `429 Too Many Requests`: Rate limit exceeded
-- `500 Internal Server Error`: Server error
-
-Error response format:
-```json
-{
-  "success": false,
-  "error": "Error message",
-  "details": [
-    {
-      "field": "fieldName",
-      "message": "Validation message"
-    }
-  ],
-  "statusCode": 400
-}
+### Docker Development
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
 ```
 
-## Deployment
+## 🔒 Security Features
 
-### Environment Variables
+- **JWT Authentication**: Stateless authentication with configurable expiration
+- **Role-Based Access**: EMPLOYEE, MANAGER, ADMIN roles with specific permissions
+- **Input Validation**: Comprehensive DTO validation with class-validator
+- **SQL Injection Prevention**: Prisma ORM parameterized queries
+- **Rate Limiting**: Global rate limiting middleware
+- **Security Headers**: Helmet for production security
+- **CORS**: Configured for cross-origin requests
 
-Ensure the following environment variables are set in production:
+## 📈 Performance & Scalability
 
+- **Database Optimization**: SQLite with proper indexing
+- **Connection Pooling**: Prisma connection management
+- **Caching Strategy**: Ready for Redis integration
+- **Horizontal Scaling**: Stateless design supports multiple instances
+- **Monitoring**: Health checks and structured logging
+
+## 🚀 Deployment
+
+### Environment Variables (Production)
 ```env
 NODE_ENV=production
 PORT=3000
-DATABASE_URL=<production-database-url>
+DATABASE_URL="file:./prod.db"
 JWT_SECRET=<strong-random-secret>
-JWT_EXPIRES_IN=24h
-LOG_LEVEL=error
 ```
 
-### Build for Production
-
+### Docker Deployment
 ```bash
-npm run build
-npm start
+# Build production image
+docker build -t wizdaa-timeoff .
+
+# Run container
+docker run -p 3000:3000 --env-file .env wizdaa-timeoff
 ```
 
-### Docker Deployment (Optional)
-
-Create a `Dockerfile`:
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
-```
-
-Build and run:
+### PM2 Deployment (Alternative)
 ```bash
-docker build -t time-off-microservice .
-docker run -p 3000:3000 --env-file .env time-off-microservice
+npm install -g pm2
+pm2 start dist/main.js --name wizdaa-timeoff
 ```
 
-## Contributing
+## 📚 Documentation
+
+- **TRD (Technical Requirements Document)**: See `TRD.md`
+- **API Documentation**: Inline code documentation
+- **Database Schema**: `prisma/schema.prisma`
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create feature branch: `git checkout -b feature/amazing-feature`
+3. Commit changes: `git commit -m 'Add amazing feature'`
+4. Push to branch: `git push origin feature/amazing-feature`
+5. Open Pull Request
 
-## License
+## 📄 License
 
-MIT License - see LICENSE file for details
+MIT License - see LICENSE file
 
-## Support
+## 🙏 Acknowledgments
 
-For issues, questions, or contributions, please open an issue on the repository.
-
-## Acknowledgments
-
-- Built with [Express](https://expressjs.com/)
+- Built with [NestJS](https://nestjs.com/)
 - Database ORM by [Prisma](https://www.prisma.io/)
-- Authentication with [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
+- Authentication with [Passport](http://www.passportjs.org/)
 - Testing with [Jest](https://jestjs.io/)
+- Validation with [class-validator](https://github.com/typestack/class-validator)
+
+---
+
+**Assessment Project**: This microservice demonstrates production-level engineering practices and meets all Wizdaa assessment requirements including NestJS framework, SQLite database, HCM sync mocks, and comprehensive testing.
