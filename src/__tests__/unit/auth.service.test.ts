@@ -1,6 +1,13 @@
+jest.mock('bcryptjs', () => ({
+  compare: jest.fn(),
+  hash: jest.fn(),
+}));
+
 import { AuthService } from '../../auth/auth.service';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
+
+const bcryptMock = bcrypt as any;
 
 const mockUser = {
   id: 'user-1',
@@ -26,6 +33,7 @@ describe('AuthService', () => {
   let authService: AuthService;
 
   beforeEach(() => {
+    jwtMock.sign.mockReturnValue('fake-jwt-token');
     authService = new AuthService(prismaMock as any, jwtMock as any);
   });
 
@@ -41,7 +49,7 @@ describe('AuthService', () => {
 
   it('returns user for valid credentials', async () => {
     prismaMock.user.findUnique.mockResolvedValue(mockUser);
-    jest.spyOn(bcrypt as any, 'compare').mockResolvedValue(true);
+    bcryptMock.compare.mockResolvedValue(true);
 
     const result = await authService.validateUser('employee@wizdaa.com', 'Password123!');
     expect(result).toEqual(mockUser);
@@ -63,7 +71,7 @@ describe('AuthService', () => {
   it('registers a new user successfully', async () => {
     prismaMock.user.findUnique.mockResolvedValue(null);
     prismaMock.user.create.mockResolvedValue(mockUser);
-    jest.spyOn(bcrypt as any, 'hash').mockResolvedValue('hashed-pass');
+    bcryptMock.hash.mockResolvedValue('hashed-pass');
 
     const result = await authService.register({
       email: 'employee@wizdaa.com',
@@ -90,7 +98,7 @@ describe('AuthService', () => {
 
   it('returns access token on successful login', async () => {
     prismaMock.user.findUnique.mockResolvedValue(mockUser);
-    jest.spyOn(bcrypt as any, 'compare').mockResolvedValue(true);
+    bcryptMock.compare.mockResolvedValue(true);
 
     const response = await authService.login({ email: 'employee@wizdaa.com', password: 'Password123!' } as any);
 

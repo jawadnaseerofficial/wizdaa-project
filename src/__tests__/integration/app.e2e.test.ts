@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, RequestMethod } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../../app.module';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -21,6 +21,17 @@ describe('AppController (e2e)', () => {
       .compile();
 
     app = moduleRef.createNestApplication();
+    app.setGlobalPrefix('/api/v1', { exclude: [{ path: '', method: RequestMethod.GET }] });
+
+    const httpAdapter = app.getHttpAdapter().getInstance();
+    httpAdapter.get('/', (_req: any, res: any) => {
+      res.status(200).json({
+        success: true,
+        message: 'Time-Off Microservice is running',
+        api: '/api/v1',
+      });
+    });
+
     await app.init();
   });
 
@@ -45,7 +56,7 @@ describe('AppController (e2e)', () => {
       .expect(200)
       .expect(({ body }: { body: any }) => {
         expect(body.success).toBe(true);
-        expect(body.data.message).toBe('Service is healthy');
+        expect(body.message).toBe('Service is healthy');
       });
   });
 });

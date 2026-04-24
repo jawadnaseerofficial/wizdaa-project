@@ -19,13 +19,14 @@ const prismaMock: any = {
     findUnique: jest.fn(),
     update: jest.fn(),
   },
-  $transaction: jest.fn(async (callback: any) => callback(prismaMock)),
+  $transaction: jest.fn(),
 };
 
 describe('TimeOffService', () => {
   let service: TimeOffService;
 
   beforeEach(() => {
+    prismaMock.$transaction.mockImplementation(async (callback: any) => await callback(prismaMock));
     service = new TimeOffService(prismaMock as any);
   });
 
